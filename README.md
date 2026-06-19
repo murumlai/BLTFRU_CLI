@@ -46,6 +46,7 @@ Expected Debug output includes:
 BLTFRU_CLI.exe --input C:\STHI\01.scan
 BLTFRU_CLI.exe --input C:\path\input.txt --config C:\path\BLTFRU.ini
 BLTFRU_CLI.exe --read-only --input C:\path\input.txt
+BLTFRU_CLI.exe --check-aardvark
 BLTFRU_CLI.exe --help
 ```
 
@@ -55,6 +56,7 @@ BLTFRU_CLI.exe --help
 | --- | --- |
 | `--input <path>` | Scan/input file containing the serial number. Defaults to `C:\STHI\01.scan`. |
 | `--config <path>` | INI configuration file. Defaults to `BLTFRU.ini` next to the executable. |
+| `--check-aardvark` | Open/configure the Aardvark adapter to verify connectivity, then exit without programming. |
 | `--read-only` | Build and display the EEPROM image without programming hardware. |
 | `--dump-image <path>` | Write the generated 128-byte EEPROM image to a binary file. |
 | `--help` | Show command-line help. |

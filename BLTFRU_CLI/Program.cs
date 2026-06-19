@@ -18,6 +18,7 @@ namespace BLTFRU_CLI
             string inputPath    = null;
             string configPath   = null;
             bool   readOnly     = false;
+            bool   checkAardvark = false;
             string dumpImagePath = null;
 
             for (int i = 0; i < args.Length; i++)
@@ -41,11 +42,18 @@ namespace BLTFRU_CLI
                         readOnly = true;
                         break;
 
+                    case "--check-aardvark":
+                        checkAardvark = true;
+                        break;
+
                     case "--dump-image":
                         if (i + 1 < args.Length) dumpImagePath = args[++i];
                         break;
                 }
             }
+
+            if (checkAardvark)
+                return CheckAardvarkConnectivity();
 
             // --- Resolve and validate input file ---
             string resolvedInput = InputLoader.ResolvePath(inputPath);
@@ -210,6 +218,28 @@ namespace BLTFRU_CLI
             Console.WriteLine();
         }
 
+        private static int CheckAardvarkConnectivity()
+        {
+            Console.WriteLine("Checking Aardvark connectivity...");
+            using (var programmer = new AardvarkEepromProgrammer(new BltFruConfig()))
+            {
+                try
+                {
+                    programmer.Open();
+                    Console.WriteLine("Aardvark connectivity: PASS");
+                    return 0;
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("Aardvark connectivity: FAIL");
+                    Console.Error.WriteLine("error: " + ex.Message);
+                    if (ex.InnerException != null)
+                        Console.Error.WriteLine("detail: " + ex.InnerException.Message);
+                    return 3;
+                }
+            }
+        }
+
         private static void PrintHelp()
         {
             Console.WriteLine("BLTFRU_CLI  -  BLT FRU EEPROM programmer");
@@ -220,6 +250,7 @@ namespace BLTFRU_CLI
             Console.WriteLine("Options:");
             Console.WriteLine("  --input <path>       Scan file containing Serial_No (default: C:\\STHI\\01.scan)");
             Console.WriteLine("  --config <path>      INI config file (default: BLTFRU.ini next to the exe)");
+            Console.WriteLine("  --check-aardvark     Check Aardvark connectivity and exit without programming");
             Console.WriteLine("  --read-only          Build and display EEPROM image; skip programming");
             Console.WriteLine("  --dump-image <path>  Write raw binary EEPROM image to file");
             Console.WriteLine("  --help               Show this help");
