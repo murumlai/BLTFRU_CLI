@@ -27,7 +27,7 @@ The tool:
 - `aardvark_net.dll`
 - `aardvark.dll`
 
-The project is configured for `x86` because the Aardvark dependencies are expected to be 32-bit compatible.
+The project supports Visual Studio `Any CPU` and `x86` solution platforms, but all build configurations set `PlatformTarget` to `x86` because the Aardvark dependencies are expected to be 32-bit compatible.
 
 ## Build
 
@@ -46,6 +46,7 @@ Expected Debug output includes:
 BLTFRU_CLI.exe --input C:\STHI\01.scan
 BLTFRU_CLI.exe --input C:\path\input.txt --config C:\path\BLTFRU.ini
 BLTFRU_CLI.exe --read-only --input C:\path\input.txt
+BLTFRU_CLI.exe --input C:\path\input.txt --dump-image C:\path\image.bin
 BLTFRU_CLI.exe --check-aardvark
 BLTFRU_CLI.exe --help
 ```

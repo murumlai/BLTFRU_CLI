@@ -144,6 +144,7 @@ namespace BLTFRU_CLI
                 try
                 {
                     programmer.Open();
+                    Console.WriteLine("Aardvark device opened successfully.");
                 }
                 catch (Exception ex)
                 {
@@ -156,6 +157,7 @@ namespace BLTFRU_CLI
                 try
                 {
                     programmer.WriteMemory(image);
+                    Console.WriteLine("EEPROM write completed successfully.");
                 }
                 catch (Exception ex)
                 {
@@ -176,10 +178,10 @@ namespace BLTFRU_CLI
                     Console.Error.WriteLine("error: read failed: " + ex.Message);
                     return 4;
                 }
-                Console.WriteLine("read done!");
+                Console.WriteLine("EEPROM read completed successfully.");
 
                 // Verify
-                Console.Write("verifying...");
+                Console.Write("verifying eeprom content...");
                 bool pass = true;
                 for (int i = 0; i < image.Length; i++)
                 {
