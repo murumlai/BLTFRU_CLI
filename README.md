@@ -15,6 +15,7 @@ The tool:
 - Programs the EEPROM through the Aardvark I2C adapter
 - Reads the EEPROM back
 - Verifies the readback byte-for-byte
+- Prints parsed BLT FRU fields from EEPROM readback
 - Prints `PASS` or `FAIL`
 - Returns a process exit code suitable for automation
 
@@ -45,7 +46,8 @@ Expected Debug output includes:
 ```powershell
 BLTFRU_CLI.exe --input C:\STHI\01.scan
 BLTFRU_CLI.exe --input C:\path\input.txt --config C:\path\BLTFRU.ini
-BLTFRU_CLI.exe --read-only --input C:\path\input.txt
+BLTFRU_CLI.exe --read-only
+BLTFRU_CLI.exe --read-only --dump-image C:\path\eeprom_dump.bin
 BLTFRU_CLI.exe --input C:\path\input.txt --dump-image C:\path\image.bin
 BLTFRU_CLI.exe --check-aardvark
 BLTFRU_CLI.exe --help
@@ -58,9 +60,34 @@ BLTFRU_CLI.exe --help
 | `--input <path>` | Scan/input file containing the serial number. Defaults to `C:\STHI\01.scan`. |
 | `--config <path>` | INI configuration file. Defaults to `BLTFRU.ini` next to the executable. |
 | `--check-aardvark` | Open/configure the Aardvark adapter to verify connectivity, then exit without programming. |
-| `--read-only` | Build and display the EEPROM image without programming hardware. |
-| `--dump-image <path>` | Write the generated 128-byte EEPROM image to a binary file. |
+| `--read-only` | Read the connected EEPROM and display parsed BLT FRU fields without programming hardware. |
+| `--dump-image <path>` | Write the generated 128-byte EEPROM image to a binary file, or in `--read-only` mode write the raw EEPROM bytes read from the device. |
 | `--help` | Show command-line help. |
+
+## Read-only output
+
+`--read-only` opens the Aardvark adapter, reads the current 128-byte EEPROM contents, and prints the BLT FRU fields one item per line:
+
+```text
+BLT FRU content:
+Manufacturer ID = FLEX ZHUHAI
+Assembly Number = E73206-201
+Serial Number = IWEJ02800058
+Manufacture Date = 260124
+Install Date = 260124
+Cycle Counter = 1
+Global Counter = 1
+Firmware Revision 1 = ####
+Firmware Revision 2 = ####
+Firmware Revision 3 = ####
+Board ID = MB
+Hardware Revision = B201
+Firmware Revision 4 = ####
+Firmware Revision 5 = ####
+Firmware Revision 6 = ####
+```
+
+The write/verify flow also prints these parsed fields from the EEPROM readback during verification.
 
 ## Input file format
 
