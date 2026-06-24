@@ -104,6 +104,11 @@ namespace BLTFRU_CLI
         /// </summary>
         public byte[] ReadMemory(short length)
         {
+            return ReadMemory(length, true);
+        }
+
+        public byte[] ReadMemory(short length, bool printHex)
+        {
             byte device = ResolvedDevice();
             byte addr   = 0;
             byte mode   = _config.AddressingMode;
@@ -133,16 +138,23 @@ namespace BLTFRU_CLI
             if (count != length)
                 Console.Error.WriteLine("warning: read {0} bytes (expected {1})", count, length);
 
-            Console.Write("\nread:");
             byte[] result = Enumerable.Repeat((byte)0xFF, length).ToArray();
+            if (printHex)
+                Console.Write("\nread:");
+
             for (int i = 0; i < count; i++)
             {
                 result[i] = dataIn[i];
-                if ((i & 0x0f) == 0) Console.Write("\n{0:X4}:  ", addr + i);
-                Console.Write("{0:X2} ", dataIn[i]);
-                if (((i + 1) & 0x07) == 0) Console.Write(" ");
+                if (printHex)
+                {
+                    if ((i & 0x0f) == 0) Console.Write("\n{0:X4}:  ", addr + i);
+                    Console.Write("{0:X2} ", dataIn[i]);
+                    if (((i + 1) & 0x07) == 0) Console.Write(" ");
+                }
             }
-            Console.WriteLine();
+            if (printHex)
+                Console.WriteLine();
+
             return result;
         }
 

@@ -248,7 +248,7 @@ namespace BLTFRU_CLI
                 byte[] data;
                 try
                 {
-                    data = programmer.ReadMemory((short)BltFruImageBuilder.BltSize);
+                    data = programmer.ReadMemory((short)BltFruImageBuilder.BltSize, false);
                 }
                 catch (Exception ex)
                 {
@@ -256,6 +256,7 @@ namespace BLTFRU_CLI
                     return 4;
                 }
                 Console.WriteLine("EEPROM read completed successfully.");
+                PrintBltContent(data);
 
                 if (!string.IsNullOrEmpty(dumpPath))
                 {
@@ -272,6 +273,57 @@ namespace BLTFRU_CLI
 
                 return 0;
             }
+        }
+
+        private static void PrintBltContent(byte[] data)
+        {
+            Console.WriteLine();
+            Console.WriteLine("BLT FRU content:");
+            PrintField("Manufacturer ID", ReadText(data, 0x00, 13));
+            PrintField("Assembly Number", ReadText(data, 0x10, 13));
+            PrintField("Serial Number", ReadText(data, 0x20, 13));
+            PrintField("Manufacture Date", ReadText(data, 0x30, 6));
+            PrintField("Install Date", ReadText(data, 0x37, 6));
+            PrintField("Cycle Counter", ReadCounter(data, 0x40));
+            PrintField("Global Counter", ReadCounter(data, 0x47));
+            PrintField("Firmware Revision 1", ReadText(data, 0x50, 4));
+            PrintField("Firmware Revision 2", ReadText(data, 0x54, 4));
+            PrintField("Firmware Revision 3", ReadText(data, 0x58, 4));
+            PrintField("Board ID", ReadText(data, 0x60, 9));
+            PrintField("Hardware Revision", ReadText(data, 0x69, 4));
+            PrintField("Firmware Revision 4", ReadText(data, 0x70, 4));
+            PrintField("Firmware Revision 5", ReadText(data, 0x74, 4));
+            PrintField("Firmware Revision 6", ReadText(data, 0x78, 4));
+        }
+
+        private static void PrintField(string name, string value)
+        {
+            Console.WriteLine("{0} = {1}", name, value);
+        }
+
+        private static string ReadText(byte[] data, int offset, int length)
+        {
+            char[] value = new char[length];
+            int count = 0;
+            for (int i = 0; i < length && offset + i < data.Length; i++)
+            {
+                byte b = data[offset + i];
+                if (b == 0x00 || b == 0xFF)
+                    continue;
+
+                value[count++] = b >= 0x20 && b <= 0x7E ? (char)b : '.';
+            }
+
+            return new string(value, 0, count).Trim();
+        }
+
+        private static string ReadCounter(byte[] data, int offset)
+        {
+            if (offset + 2 >= data.Length)
+                return string.Empty;
+
+            int value = (data[offset] << 16) | (data[offset + 1] << 8) | data[offset + 2];
+            return value.ToString();
         }
 
         private static int CheckAardvarkConnectivity()
