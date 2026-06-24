@@ -81,7 +81,18 @@ namespace BLTFRU_CLI
                     if (((i + 1) & 0x07) == 0) Console.Write(" ");
                 }
 
-                AardvarkApi.aa_i2c_write(_handle, device, AardvarkI2cFlags.AA_I2C_NO_FLAGS, (ushort)size, dataOut);
+                int written = AardvarkApi.aa_i2c_write(_handle, device, AardvarkI2cFlags.AA_I2C_NO_FLAGS, (ushort)size, dataOut);
+                if (written < 0)
+                    throw new Exception(string.Format(
+                        "I2C write error at page offset 0x{0:X2}: {1}",
+                        p, AardvarkApi.aa_status_string(written)));
+                if (written == 0)
+                    throw new Exception(string.Format(
+                        "I2C write error at page offset 0x{0:X2}: no bytes written — NACK or device not responding.", p));
+                if (written != size)
+                    throw new Exception(string.Format(
+                        "I2C write error at page offset 0x{0:X2}: wrote {1} byte(s), expected {2}.",
+                        p, written, size));
                 AardvarkApi.aa_sleep_ms(10);
             }
         }
@@ -103,7 +114,16 @@ namespace BLTFRU_CLI
             for (int ij = 0; ij < mode; ij++)
                 dataOut[mode - ij - 1] = (byte)((addr >> (8 * ij)) & 0xff);
 
-            AardvarkApi.aa_i2c_write(_handle, device, AardvarkI2cFlags.AA_I2C_NO_STOP, (ushort)mode, dataOut);
+            int addressed = AardvarkApi.aa_i2c_write(_handle, device, AardvarkI2cFlags.AA_I2C_NO_STOP, (ushort)mode, dataOut);
+            if (addressed < 0)
+                throw new Exception("I2C read address error: " + AardvarkApi.aa_status_string(addressed));
+            if (addressed == 0)
+                throw new Exception("I2C read address error: no address bytes written — check device address.");
+            if (addressed != mode)
+                throw new Exception(string.Format(
+                    "I2C read address error: wrote {0} address byte(s), expected {1}.",
+                    addressed, mode));
+
             int count = AardvarkApi.aa_i2c_read(_handle, device, AardvarkI2cFlags.AA_I2C_NO_FLAGS, (ushort)length, dataIn);
 
             if (count < 0)
