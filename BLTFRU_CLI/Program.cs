@@ -201,6 +201,8 @@ namespace BLTFRU_CLI
                     }
                 }
 
+                PrintBltContent(readBack);
+
                 if (pass)
                 {
                     Console.WriteLine("done!");
