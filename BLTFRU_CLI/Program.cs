@@ -55,15 +55,7 @@ namespace BLTFRU_CLI
             if (checkAardvark)
                 return CheckAardvarkConnectivity();
 
-            // --- Resolve and validate input file ---
-            string resolvedInput = InputLoader.ResolvePath(inputPath);
-            if (!File.Exists(resolvedInput))
-            {
-                Console.Error.WriteLine("error: input file not found: " + resolvedInput);
-                return 1;
-            }
-
-            // --- Resolve and validate config file ---
+            // --- Resolve and validate config file (required for all modes) ---
             if (string.IsNullOrEmpty(configPath))
                 configPath = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "BLTFRU.ini");
             if (!File.Exists(configPath))
@@ -72,13 +64,33 @@ namespace BLTFRU_CLI
                 return 2;
             }
 
-            // --- Load config and input ---
             BltFruConfig config;
-            BltFruInput  input;
             try
             {
                 config = ConfigLoader.Load(configPath);
-                input  = InputLoader.Load(resolvedInput);
+            }
+            catch (Exception ex)
+            {
+                Console.Error.WriteLine("error: " + ex.Message);
+                return 2;
+            }
+
+            // --- Read-only: read and display current EEPROM content from the device ---
+            if (readOnly)
+                return ReadAndDisplayEeprom(config, dumpImagePath);
+
+            // --- Resolve and validate input file ---
+            string resolvedInput = InputLoader.ResolvePath(inputPath);
+            if (!File.Exists(resolvedInput))
+            {
+                Console.Error.WriteLine("error: input file not found: " + resolvedInput);
+                return 1;
+            }
+
+            BltFruInput input;
+            try
+            {
+                input = InputLoader.Load(resolvedInput);
             }
             catch (Exception ex)
             {
@@ -130,12 +142,6 @@ namespace BLTFRU_CLI
                 {
                     Console.Error.WriteLine("warning: failed to dump image: " + ex.Message);
                 }
-            }
-
-            if (readOnly)
-            {
-                Console.WriteLine("\n--read-only: skipping programming.");
-                return 0;
             }
 
             // --- Open Aardvark ---
@@ -220,6 +226,54 @@ namespace BLTFRU_CLI
             Console.WriteLine();
         }
 
+        private static int ReadAndDisplayEeprom(BltFruConfig config, string dumpPath)
+        {
+            Console.WriteLine("I2C device -> 0x{0:X} with {1} byte(s) addressing mode.",
+                              config.DeviceAddress, config.AddressingMode);
+
+            using (var programmer = new AardvarkEepromProgrammer(config))
+            {
+                try
+                {
+                    programmer.Open();
+                    Console.WriteLine("Aardvark device opened successfully.");
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("error: " + ex.Message);
+                    return 3;
+                }
+
+                Console.WriteLine("\nreading EEPROM...");
+                byte[] data;
+                try
+                {
+                    data = programmer.ReadMemory((short)BltFruImageBuilder.BltSize);
+                }
+                catch (Exception ex)
+                {
+                    Console.Error.WriteLine("error: read failed: " + ex.Message);
+                    return 4;
+                }
+                Console.WriteLine("EEPROM read completed successfully.");
+
+                if (!string.IsNullOrEmpty(dumpPath))
+                {
+                    try
+                    {
+                        File.WriteAllBytes(dumpPath, data);
+                        Console.WriteLine("image written to: " + dumpPath);
+                    }
+                    catch (Exception ex)
+                    {
+                        Console.Error.WriteLine("warning: failed to dump image: " + ex.Message);
+                    }
+                }
+
+                return 0;
+            }
+        }
+
         private static int CheckAardvarkConnectivity()
         {
             Console.WriteLine("Checking Aardvark connectivity...");
@@ -253,7 +307,7 @@ namespace BLTFRU_CLI
             Console.WriteLine("  --input <path>       Scan file containing Serial_No (default: C:\\STHI\\01.scan)");
             Console.WriteLine("  --config <path>      INI config file (default: BLTFRU.ini next to the exe)");
             Console.WriteLine("  --check-aardvark     Check Aardvark connectivity and exit without programming");
-            Console.WriteLine("  --read-only          Build and display EEPROM image; skip programming");
+            Console.WriteLine("  --read-only          Read and display the current EEPROM content from the device");
             Console.WriteLine("  --dump-image <path>  Write raw binary EEPROM image to file");
             Console.WriteLine("  --help               Show this help");
             Console.WriteLine();
