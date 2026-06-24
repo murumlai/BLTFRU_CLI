@@ -91,13 +91,11 @@ The write/verify flow also prints these parsed fields from the EEPROM readback d
 
 ## Input file format
 
-The input parser supports a tolerant key/value format:
+The input scan file must contain a `SERIALNUMBER=<value>` entry. No other scan-file fields are parsed.
 
 ```ini
-Serial_No=IWEJ02800058
+SERIALNUMBER=IWEJ02800058
 ```
-
-If `Serial_No` is not found, the parser falls back to the first meaningful non-empty line.
 
 ## Configuration
 
