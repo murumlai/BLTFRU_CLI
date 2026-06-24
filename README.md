@@ -70,18 +70,18 @@ BLTFRU_CLI.exe --help
 
 ```text
 BLT FRU content:
-Manufacturer ID = FLEX ZHUHAI
-Assembly Number = E73206-201
-Serial Number = IWEJ02800058
+Manufacturer ID = INTEL
+Assembly Number = AAN53463-100
+Serial Number = RMAI53460715
 Manufacture Date = 260124
 Install Date = 260124
 Cycle Counter = 1
 Global Counter = 1
-Firmware Revision 1 = ####
-Firmware Revision 2 = ####
-Firmware Revision 3 = ####
-Board ID = MB
-Hardware Revision = B201
+Firmware Revision 1 = 0000
+Firmware Revision 2 = 0000
+Firmware Revision 3 = 0000
+Board ID = HOK
+Hardware Revision = A100
 Firmware Revision 4 = ####
 Firmware Revision 5 = ####
 Firmware Revision 6 = ####
@@ -101,7 +101,25 @@ If `Serial_No` is not found, the parser falls back to the first meaningful non-e
 
 ## Configuration
 
-`BLTFRU.ini` contains EEPROM defaults such as manufacturer ID, assembly number, board ID, firmware revisions, counters, EEPROM device address, addressing mode, and page size.
+`BLTFRU.ini` uses the `[BLT]` section and contains EEPROM defaults such as manufacturer ID, assembly number, board ID, hardware revision, firmware/custom fields, counters, EEPROM device address, addressing mode, and page size.
+
+Current configuration keys include:
+
+| Key | Purpose |
+| --- | --- |
+| `Manufacturer_ID` | Manufacturer text written at EEPROM offset `0x00`. |
+| `Assembly_No` | Assembly number written at EEPROM offset `0x10`. |
+| `Serial_No` | Default serial value in the INI; normal programming uses the scan/input file serial number instead. |
+| `Board_ID` | Board identifier written at EEPROM offset `0x60`. |
+| `HW_Revision` | Hardware revision written near EEPROM offset `0x69`. |
+| `Manufc_Date` / `Install_Date` | Present for compatibility with the original config format. The CLI currently generates dates during image creation. |
+| `FW_Revision_1` through `FW_Revision_5` | Firmware revision fields written into the BLT FRU layout. |
+| `Custom` | Custom/legacy field present in the current INI format. |
+| `Cycle_Counter` / `Global_Counter` | 3-byte counter values written into the BLT FRU layout. |
+| `Device_Address` | EEPROM I2C device address, parsed as hexadecimal. The current default is `56` (`0x56`). |
+| `Addressing_Mode` | Number of memory-address bytes sent before read/write operations. The current default is `2`. |
+| `Page_Size` | EEPROM page transfer size. The current default is `16`. |
+| `Offset`, `I2cFlag`, `Editable` | Compatibility/configuration metadata retained in the INI file. |
 
 By default the executable loads `BLTFRU.ini` from the application directory so deployment is independent of the original GUI project folder.
 
