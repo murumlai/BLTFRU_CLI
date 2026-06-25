@@ -12,7 +12,7 @@ The tool:
 - Reads a serial number from an input scan file
 - Builds the 128-byte BLT FRU EEPROM image
 - Appends CRC values per 16-byte block
-- Programs the EEPROM through the Aardvark I2C adapter
+- Programs the EEPROM through the Aardvark I2C adapter only when `--write-and-verify` is specified
 - Reads the EEPROM back
 - Verifies the readback byte-for-byte
 - Prints parsed BLT FRU fields from EEPROM readback
@@ -44,25 +44,34 @@ Expected Debug output includes:
 ## Usage
 
 ```powershell
-BLTFRU_CLI.exe --scanfile C:\STHI\01.scan
-BLTFRU_CLI.exe --scanfile C:\path\input.txt --inifile C:\path\BLTFRU.ini
+BLTFRU_CLI.exe --write-and-verify
+BLTFRU_CLI.exe --write-and-verify --scanfile C:\path\input.txt --inifile C:\path\BLTFRU.ini
 BLTFRU_CLI.exe --read-only
 BLTFRU_CLI.exe --read-only --dump-image C:\path\eeprom_dump.bin
-BLTFRU_CLI.exe --scanfile C:\path\input.txt --dump-image C:\path\image.bin
+BLTFRU_CLI.exe --write-and-verify --scanfile C:\path\input.txt --dump-image C:\path\image.bin
 BLTFRU_CLI.exe --check-aardvark
 BLTFRU_CLI.exe --help
 ```
+
+Running `BLTFRU_CLI.exe` without an operation switch prints help and exits. Programming never starts unless `--write-and-verify` is present.
 
 ## Options
 
 | Option | Description |
 | --- | --- |
+| `--write-and-verify` | Build the EEPROM image, write it to the connected EEPROM, read it back, and verify readback byte-for-byte. Uses `C:\STHI\01.scan` by default for the serial number. |
 | `--scanfile <path>` | Scan file containing the serial number. Defaults to `C:\STHI\01.scan`. |
 | `--inifile <path>` | INI configuration file. Defaults to `BLTFRU.ini` next to the executable. |
 | `--check-aardvark` | Open/configure the Aardvark adapter to verify connectivity, then exit without programming. |
 | `--read-only` | Read the connected EEPROM and display parsed BLT FRU fields without programming hardware. |
 | `--dump-image <path>` | Write the generated 128-byte EEPROM image to a binary file, or in `--read-only` mode write the raw EEPROM bytes read from the device. |
 | `--help` | Show command-line help. |
+
+## Write and verify flow
+
+`--write-and-verify` is the only mode that programs the EEPROM. When called without `--scanfile`, it looks for the default scan file at `C:\STHI\01.scan`. If that file is missing, the tool prints an error and exits with code `1`.
+
+When the scan file is present, the tool extracts `SERIALNUMBER`, builds the BLT FRU image from `BLTFRU.ini` plus the scanned serial number, writes the EEPROM, reads it back, compares every byte, and prints parsed BLT FRU fields from the EEPROM readback.
 
 ## Read-only output
 
@@ -126,8 +135,8 @@ By default the executable loads `BLTFRU.ini` from the application directory so d
 | Code | Meaning |
 | --- | --- |
 | `0` | PASS |
-| `1` | Input file not found |
-| `2` | Config, parse, or validation failure |
+| `1` | Scan file not found |
+| `2` | INI file, parse, or validation failure |
 | `3` | Aardvark open failure |
 | `4` | I2C write or read failure |
 | `5` | Verify mismatch / FAIL |
