@@ -52,6 +52,12 @@ namespace BLTFRU_CLI
                 }
             }
 
+            if (args.Length == 0)
+            {
+                PrintHelp();
+                return 0;
+            }
+
             if (checkAardvark)
                 return CheckAardvarkConnectivity();
 
