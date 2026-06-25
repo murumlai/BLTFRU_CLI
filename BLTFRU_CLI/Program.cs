@@ -15,10 +15,11 @@ namespace BLTFRU_CLI
 
         static int Main(string[] args)
         {
-            string inputPath    = null;
-            string configPath   = null;
-            bool   readOnly     = false;
+            string inputPath     = null;
+            string configPath    = null;
+            bool   readOnly      = false;
             bool   checkAardvark = false;
+            bool   writeAndVerify = false;
             string dumpImagePath = null;
 
             for (int i = 0; i < args.Length; i++)
@@ -40,6 +41,10 @@ namespace BLTFRU_CLI
 
                     case "--read-only":
                         readOnly = true;
+                        break;
+
+                    case "--write-and-verify":
+                        writeAndVerify = true;
                         break;
 
                     case "--check-aardvark":
@@ -85,11 +90,18 @@ namespace BLTFRU_CLI
             if (readOnly)
                 return ReadAndDisplayEeprom(config, dumpImagePath);
 
-            // --- Resolve and validate input file ---
+            if (!writeAndVerify)
+            {
+                PrintHelp();
+                return 0;
+            }
+
+            // --- Write and verify ---
+            // Resolve scan file (defaults to C:\STHI\01.scan)
             string resolvedInput = InputLoader.ResolvePath(inputPath);
             if (!File.Exists(resolvedInput))
             {
-                Console.Error.WriteLine("error: input file not found: " + resolvedInput);
+                Console.Error.WriteLine("error: scan file not found: " + resolvedInput);
                 return 1;
             }
 
@@ -194,6 +206,7 @@ namespace BLTFRU_CLI
 
                 // Verify
                 Console.Write("verifying eeprom content...");
+                Console.WriteLine(); // empty line for better readability
                 bool pass = true;
                 for (int i = 0; i < image.Length; i++)
                 {
@@ -208,6 +221,7 @@ namespace BLTFRU_CLI
                 }
 
                 PrintBltContent(readBack);
+                Console.WriteLine(); // empty line for better readability
 
                 if (pass)
                 {
@@ -264,6 +278,7 @@ namespace BLTFRU_CLI
                     return 4;
                 }
                 Console.WriteLine("EEPROM read completed successfully.");
+                Console.WriteLine(); // empty line for better readability
                 PrintBltContent(data);
 
                 if (!string.IsNullOrEmpty(dumpPath))
@@ -361,13 +376,16 @@ namespace BLTFRU_CLI
             Console.WriteLine("BLTFRU_CLI  -  BLT FRU EEPROM programmer");
             Console.WriteLine();
             Console.WriteLine("Usage:");
-            Console.WriteLine("  BLTFRU_CLI.exe --scanfile <path> [options]");
+            Console.WriteLine("  BLTFRU_CLI.exe --write-and-verify [options]");
+            Console.WriteLine("  BLTFRU_CLI.exe --read-only [options]");
+            Console.WriteLine("  BLTFRU_CLI.exe --check-aardvark");
             Console.WriteLine();
             Console.WriteLine("Options:");
-            Console.WriteLine("  --scanfile <path>    Scan file containing Serial_No (default: C:\\STHI\\01.scan)");
-            Console.WriteLine("  --inifile <path>     INI config file (default: BLTFRU.ini next to the exe)");
-            Console.WriteLine("  --check-aardvark     Check Aardvark connectivity and exit without programming");
+            Console.WriteLine("  --write-and-verify   Write EEPROM image and verify readback against BLTFRU.ini");
             Console.WriteLine("  --read-only          Read and display the current EEPROM content from the device");
+            Console.WriteLine("  --check-aardvark     Check Aardvark connectivity and exit without programming");
+            Console.WriteLine("  --scanfile <path>    Scan file containing SERIALNUMBER (default: C:\\STHI\\01.scan)");
+            Console.WriteLine("  --inifile <path>     INI config file (default: BLTFRU.ini next to the exe)");
             Console.WriteLine("  --dump-image <path>  Write raw binary EEPROM image to file");
             Console.WriteLine("  --help               Show this help");
             Console.WriteLine();
