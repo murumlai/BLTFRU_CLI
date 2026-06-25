@@ -30,11 +30,11 @@ namespace BLTFRU_CLI
                         PrintHelp();
                         return 0;
 
-                    case "--input":
+                    case "--scanfile":
                         if (i + 1 < args.Length) inputPath = args[++i];
                         break;
 
-                    case "--config":
+                    case "--inifile":
                         if (i + 1 < args.Length) configPath = args[++i];
                         break;
 
@@ -361,11 +361,11 @@ namespace BLTFRU_CLI
             Console.WriteLine("BLTFRU_CLI  -  BLT FRU EEPROM programmer");
             Console.WriteLine();
             Console.WriteLine("Usage:");
-            Console.WriteLine("  BLTFRU_CLI.exe --input <path> [options]");
+            Console.WriteLine("  BLTFRU_CLI.exe --scanfile <path> [options]");
             Console.WriteLine();
             Console.WriteLine("Options:");
-            Console.WriteLine("  --input <path>       Scan file containing Serial_No (default: C:\\STHI\\01.scan)");
-            Console.WriteLine("  --config <path>      INI config file (default: BLTFRU.ini next to the exe)");
+            Console.WriteLine("  --scanfile <path>    Scan file containing Serial_No (default: C:\\STHI\\01.scan)");
+            Console.WriteLine("  --inifile <path>     INI config file (default: BLTFRU.ini next to the exe)");
             Console.WriteLine("  --check-aardvark     Check Aardvark connectivity and exit without programming");
             Console.WriteLine("  --read-only          Read and display the current EEPROM content from the device");
             Console.WriteLine("  --dump-image <path>  Write raw binary EEPROM image to file");
@@ -373,8 +373,8 @@ namespace BLTFRU_CLI
             Console.WriteLine();
             Console.WriteLine("Exit codes:");
             Console.WriteLine("  0  PASS");
-            Console.WriteLine("  1  Input file not found");
-            Console.WriteLine("  2  Config / parse / validation failure");
+            Console.WriteLine("  1  Scan file not found");
+            Console.WriteLine("  2  Ini file / parse / validation failure");
             Console.WriteLine("  3  Aardvark device open failure");
             Console.WriteLine("  4  I2C write or read failure");
             Console.WriteLine("  5  Verify mismatch (FAIL)");

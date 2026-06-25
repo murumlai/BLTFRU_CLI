@@ -44,11 +44,11 @@ Expected Debug output includes:
 ## Usage
 
 ```powershell
-BLTFRU_CLI.exe --input C:\STHI\01.scan
-BLTFRU_CLI.exe --input C:\path\input.txt --config C:\path\BLTFRU.ini
+BLTFRU_CLI.exe --scanfile C:\STHI\01.scan
+BLTFRU_CLI.exe --scanfile C:\path\input.txt --inifile C:\path\BLTFRU.ini
 BLTFRU_CLI.exe --read-only
 BLTFRU_CLI.exe --read-only --dump-image C:\path\eeprom_dump.bin
-BLTFRU_CLI.exe --input C:\path\input.txt --dump-image C:\path\image.bin
+BLTFRU_CLI.exe --scanfile C:\path\input.txt --dump-image C:\path\image.bin
 BLTFRU_CLI.exe --check-aardvark
 BLTFRU_CLI.exe --help
 ```
@@ -57,8 +57,8 @@ BLTFRU_CLI.exe --help
 
 | Option | Description |
 | --- | --- |
-| `--input <path>` | Scan/input file containing the serial number. Defaults to `C:\STHI\01.scan`. |
-| `--config <path>` | INI configuration file. Defaults to `BLTFRU.ini` next to the executable. |
+| `--scanfile <path>` | Scan file containing the serial number. Defaults to `C:\STHI\01.scan`. |
+| `--inifile <path>` | INI configuration file. Defaults to `BLTFRU.ini` next to the executable. |
 | `--check-aardvark` | Open/configure the Aardvark adapter to verify connectivity, then exit without programming. |
 | `--read-only` | Read the connected EEPROM and display parsed BLT FRU fields without programming hardware. |
 | `--dump-image <path>` | Write the generated 128-byte EEPROM image to a binary file, or in `--read-only` mode write the raw EEPROM bytes read from the device. |
